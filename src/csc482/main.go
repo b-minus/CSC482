@@ -5,6 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+
+	cron "github.com/robfig/cron"
 
 	loggly "github.com/jamespearly/loggly"
 )
@@ -27,18 +31,20 @@ type lolParticipant struct {
 	SummonerName string `json"summonerName"`
 }
 
-//Main function
-func main() {
-
+func getRequest() {
 	//Loggly Testing
 	var tag string
-	tag = "My-Go-Demo"
+	tag = "cron-test"
 	client := loggly.New(tag)
 
 	err := client.EchoSend("error", "This is a debug memssage")
 
 	//Get request for featured games
-	resp, err := http.Get("https://na1.api.riotgames.com/lol/spectator/v4/featured-games?api_key=RGAPI-225637a3-5eb0-4b72-b122-c4654faa3103")
+	var apiKey string
+	var url string
+	apiKey = "RGAPI-f02697b0-1f2c-41ec-88d2-2fbd8c9fbb7d"
+	url = "https://na1.api.riotgames.com/lol/spectator/v4/featured-games?api_key=" + apiKey
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,5 +65,16 @@ func main() {
 	}
 
 	log.Printf("%+v", y)
+}
 
+//Main function
+func main() {
+	//Run code once every 30 minutes
+	c := cron.New()
+	c.AddFunc("@every 30m", func() { getRequest() })
+	c.Start()
+
+	sig := make(chan os.Signal)
+	signal.Notify(sig, os.Interrupt, os.Kill)
+	<-sig
 }
