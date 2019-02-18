@@ -69,9 +69,9 @@ func getRequest() {
 
 //Main function
 func main() {
-	//Run code once every 30 minutes
+	//Run code once every 15 minutes
 	c := cron.New()
-	c.AddFunc("@every 30m", func() { getRequest() })
+	c.AddFunc("@every 15m", func() { getRequest() })
 	c.Start()
 
 	sig := make(chan os.Signal)
